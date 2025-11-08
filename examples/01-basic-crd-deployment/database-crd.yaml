@@ -13,7 +13,7 @@ spec:
     singular: database
     kind: Database
     shortNames:
-      - 
+    - db
   versions:
     - name: v1
       served: true
