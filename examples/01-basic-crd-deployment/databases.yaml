@@ -31,3 +31,15 @@ spec:
     enabled: true
     schedule: "0 2 * * *"  # Daily at 2 AM
     retention: 30
+---
+# Redis DB
+apiVersion: data.example.com/v1
+kind: Database
+metadata:
+  name: staging-redis
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  engine: redis
+  version: "7.0"
+  storageSize: 10Gi

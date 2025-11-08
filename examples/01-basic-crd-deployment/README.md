@@ -63,6 +63,8 @@ argocd app create basic-crd-example \
 ```bash
 # Check ArgoCD application status
 argocd app get basic-crd-example
+argocd app resources basic-crd-example
+argocd app manifests basic-crd-example
 
 # Verify CRD installation
 kubectl get crds | grep databases.data.example.com
