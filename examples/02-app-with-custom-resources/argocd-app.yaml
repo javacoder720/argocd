@@ -7,9 +7,9 @@ spec:
   project: default
 
   source:
-    repoURL: https://github.com/YOUR-ORG/YOUR-REPO  # UPDATE THIS
+    repoURL: https://github.com/javacoder720/argocd  # UPDATE THIS
     targetRevision: main
-    path: k8s/crds-argocd/examples/02-app-with-custom-resources
+    path: crds-argocd/examples/02-app-with-custom-resources
 
   destination:
     server: https://kubernetes.default.svc

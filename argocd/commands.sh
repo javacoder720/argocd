@@ -1,3 +1,12 @@
+  eksctl create cluster \
+    --name argocd-cluster \
+    --region us-east-1 \
+    --node-type t3.small \
+    --nodes 3 \
+    --nodes-min 3 \
+    --nodes-max 4 \
+    --managed
+
   eksctl create nodegroup \
     --cluster=argocd-cluster \
     --region=us-east-1 \
@@ -25,9 +34,9 @@
 
 
 # login to argocd
-  kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
-  argocd login localhost:8080 --username admin --password $ARGOCD_PASSWORD --insecure
-  argocd account update-password
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+argocd login localhost:8080 --username admin --password $ARGOCD_PASSWORD --insecure
+argocd account update-password
 
 # argocd
 argocd app create guestbook \
@@ -46,3 +55,8 @@ helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
 
 
 kubectl tree -n kube-system pod/aws-load-balancer-controller-67f48ccdbb-brsvb
+
+
+# delete
+eksctl get cluster
+eksctl delete cluster --name argocd-cluster --region us-east-1

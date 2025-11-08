@@ -21,7 +21,7 @@ spec:
       - name: app
         image: nginx:1.21
         ports:
-        - containerPort: 8080
+        - containerPort: 80
           name: http
         env:
         - name: DATABASE_HOST
@@ -44,6 +44,16 @@ spec:
             configMapKeyRef:
               name: web-app-config
               key: LOG_LEVEL
+        - name: DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: web-app-db-secret
+              key: DATABASE_USER
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: web-app-db-secret
+              key: DATABASE_PASSWORD
         resources:
           requests:
             cpu: 100m

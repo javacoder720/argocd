@@ -201,3 +201,7 @@ kubectl get crd databases.data.example.com -o yaml
 - Try [Example 2](../02-app-with-custom-resources/) to see CRDs in a full application
 - Modify the CRD schema and add new fields
 - Add status tracking to the CRD
+
+
+
+

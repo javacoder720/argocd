@@ -36,7 +36,11 @@ Deploy a web application with:
 - `app-deployment.yaml` - Application deployment
 - `app-service.yaml` - Service to expose app
 - `app-configmap.yaml` - Application configuration
+- `app-secret.yaml` - Database credentials (Secret)
 - `argocd-app.yaml` - ArgoCD application definition
+- `base/` - Kustomize base configuration
+- `overlays/dev/` - Development environment overlay
+- `overlays/prod/` - Production environment overlay
 
 ## Prerequisites
 
@@ -59,8 +63,8 @@ kubectl apply -f argocd-app.yaml
 # Check status
 argocd app get app-with-crds
 
-# Watch sync progress
-argocd app sync app-with-crds --watch
+# Wait for sync to complete
+argocd app wait app-with-crds --timeout 300
 ```
 
 ### Manual Deployment
@@ -70,6 +74,7 @@ argocd app sync app-with-crds --watch
 kubectl apply -f database-crd.yaml
 kubectl apply -f database.yaml
 kubectl apply -f app-configmap.yaml
+kubectl apply -f app-secret.yaml
 kubectl apply -f app-deployment.yaml
 kubectl apply -f app-service.yaml
 
@@ -77,6 +82,20 @@ kubectl apply -f app-service.yaml
 kubectl get databases
 kubectl get pods
 kubectl get svc
+```
+
+### Using Kustomize
+
+```bash
+# Deploy to dev environment
+kubectl apply -k overlays/dev
+
+# Deploy to prod environment
+kubectl apply -k overlays/prod
+
+# Preview without applying
+kubectl kustomize overlays/dev
+kubectl kustomize overlays/prod
 ```
 
 ## Verify Deployment
@@ -155,8 +174,28 @@ argocd app delete app-with-crds --cascade
 kubectl delete -f .
 ```
 
+## Kustomize Environments
+
+This example includes two Kustomize overlays:
+
+### Development (overlays/dev/)
+- 1 replica
+- 10Gi storage
+- Debug logging
+- Lower resource limits
+- Deployed to `dev` namespace
+
+### Production (overlays/prod/)
+- 5 replicas
+- 100Gi storage
+- PostgreSQL 16.0
+- Warn-level logging
+- Higher resource limits
+- Deployed to `prod` namespace
+
 ## Next Steps
 
 - Try [Example 3](../03-multi-environment/) for multi-environment setup
 - Modify the custom resource schema
 - Add health checks to the application
+- Create additional overlays for staging
