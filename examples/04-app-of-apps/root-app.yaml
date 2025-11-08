@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root-app
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  # Source: Directory containing all child application manifests
+  source:
+    repoURL: https://github.com/YOUR-ORG/YOUR-REPO  # UPDATE THIS
+    targetRevision: main
+    path: k8s/crds-argocd/examples/04-app-of-apps/apps
+    directory:
+      recurse: true  # Include subdirectories
+      jsonnet: {}
+
+  # Destination: ArgoCD namespace (where Applications are created)
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+
+  # Sync policy for the root app
+  syncPolicy:
+    automated:
+      prune: true      # Remove apps when deleted from Git
+      selfHeal: true   # Sync when app definitions change
+    syncOptions:
+      - CreateNamespace=true
+
+  # Ignore differences in some fields
+  ignoreDifferences:
+    - group: argoproj.io
+      kind: Application
+      jsonPointers:
+        - /status

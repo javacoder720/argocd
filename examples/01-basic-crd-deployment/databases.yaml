@@ -1,0 +1,33 @@
+---
+# Development PostgreSQL Database
+apiVersion: data.example.com/v1
+kind: Database
+metadata:
+  name: dev-postgres
+  namespace: default
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"  # Install after CRD
+spec:
+  engine: postgres
+  version: "15.3"
+  storageSize: "20Gi"
+  backup:
+    enabled: false  # No backups for dev
+
+---
+# Production MySQL Database
+apiVersion: data.example.com/v1
+kind: Database
+metadata:
+  name: prod-mysql
+  namespace: default
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  engine: mysql
+  version: "8.0"
+  storageSize: "100Gi"
+  backup:
+    enabled: true
+    schedule: "0 2 * * *"  # Daily at 2 AM
+    retention: 30

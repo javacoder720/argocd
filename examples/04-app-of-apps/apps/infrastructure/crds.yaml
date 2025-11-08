@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: crds
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"  # Deploy first - wave 0
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/YOUR-ORG/YOUR-REPO  # UPDATE THIS
+    targetRevision: main
+    path: k8s/crds-argocd/crds
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+
+  syncPolicy:
+    automated:
+      prune: false  # Never auto-delete CRDs
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - Replace=true  # Use replace instead of apply for CRDs

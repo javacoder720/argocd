@@ -1,0 +1,115 @@
+---
+# Simple application pointing to a Git repository
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: guestbook
+  namespace: argocd
+spec:
+  project: default
+
+  # Source repository
+  source:
+    repoURL: https://github.com/argoproj/argocd-example-apps.git
+    targetRevision: HEAD
+    path: guestbook
+
+  # Destination cluster and namespace
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+
+  # Sync policy
+  syncPolicy:
+    automated:
+      prune: false     # Don't delete resources not in Git (safer for learning)
+      selfHeal: false  # Don't force sync when cluster differs from Git
+    syncOptions:
+      - CreateNamespace=true
+
+---
+# Application with Helm chart
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nginx-helm
+  namespace: argocd
+spec:
+  project: default
+
+  source:
+    repoURL: https://charts.bitnami.com/bitnami
+    chart: nginx
+    targetRevision: 13.2.23
+    helm:
+      parameters:
+        - name: service.type
+          value: ClusterIP
+        - name: replicaCount
+          value: "2"
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: nginx
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+
+---
+# Application with auto-sync and sync waves
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: multi-tier-app
+  namespace: argocd
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/argoproj/argocd-example-apps.git
+    targetRevision: HEAD
+    path: helm-guestbook
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: guestbook
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+
+---
+# Application with Kustomize
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kustomize-app
+  namespace: argocd
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/argoproj/argocd-example-apps.git
+    targetRevision: HEAD
+    path: kustomize-guestbook
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kustomize-demo
+
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true

@@ -1,0 +1,64 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: database-controller
+  namespace: default
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: database-controller
+  namespace: default
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+rules:
+  # Watch and manage Database custom resources
+  - apiGroups: ["data.example.com"]
+    resources: ["databases"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+
+  # Update Database status
+  - apiGroups: ["data.example.com"]
+    resources: ["databases/status"]
+    verbs: ["get", "update", "patch"]
+
+  # Manage Pods for database instances
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch", "create", "update", "delete"]
+
+  # Manage Services for database access
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list", "watch", "create", "update", "delete"]
+
+  # Manage PersistentVolumeClaims for storage
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "create", "update", "delete"]
+
+  # Create events for debugging
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: database-controller
+  namespace: default
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: database-controller
+subjects:
+  - kind: ServiceAccount
+    name: database-controller
+    namespace: default

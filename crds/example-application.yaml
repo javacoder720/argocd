@@ -1,0 +1,44 @@
+---
+# Example 1: Simple nginx application
+apiVersion: example.com/v1
+kind: Application
+metadata:
+  name: nginx-app
+  namespace: default
+spec:
+  image: nginx:1.21
+  replicas: 3
+  port: 80
+  environment: dev
+
+---
+# Example 2: Production application with resources
+apiVersion: example.com/v1
+kind: Application
+metadata:
+  name: api-server
+  namespace: production
+spec:
+  image: mycompany/api-server:v2.1.0
+  replicas: 5
+  port: 8080
+  environment: prod
+  resources:
+    cpu: "1"
+    memory: "2Gi"
+
+---
+# Example 3: Staging environment
+apiVersion: example.com/v1
+kind: Application
+metadata:
+  name: frontend
+  namespace: staging
+spec:
+  image: mycompany/frontend:latest
+  replicas: 2
+  port: 3000
+  environment: staging
+  resources:
+    cpu: "500m"
+    memory: "512Mi"

@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: basic-crd-example
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io  # Cascade delete
+spec:
+  project: default
+
+  # Source repository
+  source:
+    repoURL: https://github.com/javacoder720/argocd
+    targetRevision: main
+    path: examples/01-basic-crd-deployment
+
+  # Destination
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+
+  # Sync policy
+  syncPolicy:
+    automated:
+      prune: true      # Delete resources not in Git
+      selfHeal: true   # Sync when cluster state differs
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m

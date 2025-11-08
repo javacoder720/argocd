@@ -1,0 +1,9 @@
+apiVersion: data.example.com/v1
+kind: Database
+metadata:
+  name: app-db
+spec:
+  storageSize: "200Gi"
+  backup:
+    enabled: true
+    schedule: "0 2 * * *"  # Daily at 2 AM

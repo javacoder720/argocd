@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: database-controller
+  namespace: default
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+  labels:
+    app: database-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: database-controller
+  template:
+    metadata:
+      labels:
+        app: database-controller
+    spec:
+      serviceAccountName: database-controller
+      containers:
+      - name: controller
+        # This is a placeholder image - replace with your actual controller
+        # For a real controller, you'd build this using Kubebuilder, Operator SDK, or Kopf
+        image: busybox:latest
+        command:
+          - /bin/sh
+          - -c
+          - |
+            echo "Database Controller (Demo Mode)"
+            echo "In production, this would:"
+            echo "- Watch Database custom resources"
+            echo "- Create/update/delete Pods and Services"
+            echo "- Update Database status"
+            echo ""
+            echo "To build a real controller, use:"
+            echo "- Kubebuilder: https://book.kubebuilder.io/"
+            echo "- Operator SDK: https://sdk.operatorframework.io/"
+            echo "- Kopf (Python): https://kopf.readthedocs.io/"
+            echo ""
+            echo "Controller is running (in demo mode)..."
+            while true; do sleep 3600; done
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi

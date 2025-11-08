@@ -1,0 +1,96 @@
+---
+# ArgoCD Ingress with NGINX Ingress Controller
+# Prerequisites:
+# 1. NGINX Ingress Controller installed
+# 2. cert-manager for TLS certificates (optional)
+# 3. DNS record pointing to ingress LoadBalancer
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-server-ingress
+  namespace: argocd
+  annotations:
+    # NGINX specific annotations
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+
+    # Increase timeout for long-running operations
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+
+    # Optional: cert-manager for automatic TLS
+    # cert-manager.io/cluster-issuer: "letsencrypt-prod"
+
+    # Optional: AWS Load Balancer Controller annotations
+    # alb.ingress.kubernetes.io/scheme: internet-facing
+    # alb.ingress.kubernetes.io/target-type: ip
+    # alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:region:account:certificate/xxx
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: argocd.example.com  # Change to your domain
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: argocd-server
+                port:
+                  name: https
+  tls:
+    - hosts:
+        - argocd.example.com
+      secretName: argocd-server-tls  # TLS certificate secret
+
+---
+# Alternative: AWS ALB Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-server-alb
+  namespace: argocd
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/backend-protocol: HTTPS
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTPS
+    alb.ingress.kubernetes.io/healthcheck-path: /healthz
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+
+    # Reference to ACM certificate
+    # alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:123456789012:certificate/xxx
+
+    # Optional: Custom group for sharing ALB
+    # alb.ingress.kubernetes.io/group.name: shared-alb
+spec:
+  ingressClassName: alb
+  rules:
+    - host: argocd.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: argocd-server
+                port:
+                  number: 443
+
+---
+# Self-signed certificate for testing (not for production)
+# Generate with: kubectl create secret tls argocd-server-tls -n argocd --cert=cert.pem --key=key.pem
+apiVersion: v1
+kind: Secret
+metadata:
+  name: argocd-server-tls
+  namespace: argocd
+type: kubernetes.io/tls
+data:
+  # Replace with your base64-encoded certificate and key
+  tls.crt: LS0tLS1CRUdJTi... # base64 encoded cert
+  tls.key: LS0tLS1CRUdJTi... # base64 encoded key

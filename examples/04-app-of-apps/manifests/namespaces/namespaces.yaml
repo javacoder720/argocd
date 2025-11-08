@@ -1,0 +1,43 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: frontend
+  labels:
+    environment: production
+    team: platform
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: backend
+  labels:
+    environment: production
+    team: platform
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: database
+  labels:
+    environment: production
+    team: platform
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  labels:
+    environment: production
+    team: platform
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"

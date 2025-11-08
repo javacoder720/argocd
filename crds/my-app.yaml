@@ -1,0 +1,7 @@
+apiVersion: example.com/v1
+kind: Application
+metadata:
+  name: my-app
+spec:
+  image: nginx:1.21
+  replicas: 3

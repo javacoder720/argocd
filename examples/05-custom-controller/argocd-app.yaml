@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: database-controller
+  namespace: argocd
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/YOUR-ORG/YOUR-REPO  # UPDATE THIS
+    targetRevision: main
+    path: k8s/crds-argocd/examples/05-custom-controller
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

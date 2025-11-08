@@ -1,0 +1,78 @@
+---
+# Example 1: PostgreSQL database for development
+apiVersion: data.example.com/v1
+kind: Database
+metadata:
+  name: dev-postgres
+  namespace: development
+spec:
+  engine: postgres
+  version: "15.3"
+  storageSize: "20Gi"
+  storageClass: gp3
+  backup:
+    enabled: false
+  resources:
+    cpu: "250m"
+    memory: "512Mi"
+
+---
+# Example 2: Production MySQL with HA and backups
+apiVersion: data.example.com/v1
+kind: Database
+metadata:
+  name: prod-mysql
+  namespace: production
+spec:
+  engine: mysql
+  version: "8.0"
+  storageSize: "100Gi"
+  storageClass: io1
+  highAvailability: true
+  backup:
+    enabled: true
+    schedule: "0 2 * * *"  # Daily at 2 AM
+    retention: 30
+  resources:
+    cpu: "2"
+    memory: "4Gi"
+
+---
+# Example 3: Redis cache
+apiVersion: data.example.com/v1
+kind: Database
+metadata:
+  name: session-cache
+  namespace: production
+spec:
+  engine: redis
+  version: "7.0"
+  storageSize: "50Gi"
+  highAvailability: true
+  backup:
+    enabled: true
+    schedule: "0 */6 * * *"  # Every 6 hours
+    retention: 14
+  resources:
+    cpu: "1"
+    memory: "2Gi"
+
+---
+# Example 4: MongoDB for analytics
+apiVersion: data.example.com/v1
+kind: Database
+metadata:
+  name: analytics-db
+  namespace: analytics
+spec:
+  engine: mongodb
+  version: "6.0"
+  storageSize: "200Gi"
+  storageClass: gp3
+  backup:
+    enabled: true
+    schedule: "0 3 * * *"
+    retention: 7
+  resources:
+    cpu: "4"
+    memory: "8Gi"

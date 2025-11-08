@@ -1,0 +1,27 @@
+---
+# Example 1: PostgreSQL database
+apiVersion: data.example.com/v1
+kind: Database
+metadata:
+  name: my-postgres
+  namespace: default
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  engine: postgres
+  version: "15.3"
+  storageSize: "20Gi"
+
+---
+# Example 2: MySQL database
+apiVersion: data.example.com/v1
+kind: Database
+metadata:
+  name: my-mysql
+  namespace: default
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  engine: mysql
+  version: "8.0"
+  storageSize: "50Gi"

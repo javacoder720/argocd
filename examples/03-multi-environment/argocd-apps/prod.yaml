@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: myapp-prod
+  namespace: argocd
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/YOUR-ORG/YOUR-REPO  # UPDATE THIS
+    targetRevision: main
+    path: k8s/crds-argocd/examples/03-multi-environment/overlays/prod
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: production
+
+  syncPolicy:
+    # Manual sync for production
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 5m

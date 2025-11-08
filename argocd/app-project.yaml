@@ -1,0 +1,172 @@
+---
+# AppProject for multi-tenancy and RBAC
+# Projects provide logical grouping and access control for applications
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: team-alpha
+  namespace: argocd
+spec:
+  description: Team Alpha's project for development applications
+
+  # Source repositories that applications can use
+  sourceRepos:
+    - https://github.com/myorg/*
+    - https://github.com/myorg/team-alpha-*
+
+  # Destinations where applications can be deployed
+  destinations:
+    - namespace: 'team-alpha-*'
+      server: https://kubernetes.default.svc
+    - namespace: 'dev'
+      server: https://kubernetes.default.svc
+
+  # Cluster resource whitelist (what can be created)
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+    - group: 'rbac.authorization.k8s.io'
+      kind: ClusterRole
+    - group: 'rbac.authorization.k8s.io'
+      kind: ClusterRoleBinding
+
+  # Namespace resource whitelist
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+
+  # Deny specific resources
+  namespaceResourceBlacklist:
+    - group: ''
+      kind: ResourceQuota
+    - group: ''
+      kind: LimitRange
+
+  # Roles for project-level RBAC
+  roles:
+    - name: developer
+      description: Developers can view and sync applications
+      policies:
+        - p, proj:team-alpha:developer, applications, get, team-alpha/*, allow
+        - p, proj:team-alpha:developer, applications, sync, team-alpha/*, allow
+      groups:
+        - team-alpha-developers
+
+    - name: admin
+      description: Project admins have full control
+      policies:
+        - p, proj:team-alpha:admin, applications, *, team-alpha/*, allow
+        - p, proj:team-alpha:admin, repositories, *, team-alpha/*, allow
+      groups:
+        - team-alpha-admins
+
+---
+# Production project with stricter controls
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: production
+  namespace: argocd
+spec:
+  description: Production applications with strict controls
+
+  sourceRepos:
+    - https://github.com/myorg/production-apps
+
+  destinations:
+    - namespace: 'prod-*'
+      server: https://kubernetes.default.svc
+
+  # Only allow specific cluster resources
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+
+  # All namespace resources allowed
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+
+  # Deny dangerous resources in production
+  namespaceResourceBlacklist:
+    - group: ''
+      kind: Pod  # Force use of Deployments/StatefulSets
+    - group: 'batch'
+      kind: Job  # Prevent manual jobs
+
+  # Sync windows - only allow syncs during maintenance windows
+  syncWindows:
+    - kind: allow
+      schedule: '0 22 * * *'  # 10 PM daily
+      duration: 2h
+      applications:
+        - '*'
+      manualSync: false
+
+    - kind: allow
+      schedule: '0 * * * *'   # Always allow for critical apps
+      duration: 1h
+      applications:
+        - 'critical-*'
+      manualSync: true
+
+  # Deny syncs during business hours
+  syncWindows:
+    - kind: deny
+      schedule: '0 9-17 * * 1-5'  # 9 AM - 5 PM weekdays
+      duration: 8h
+      applications:
+        - '*'
+
+  roles:
+    - name: deployer
+      description: Can trigger syncs during allowed windows
+      policies:
+        - p, proj:production:deployer, applications, sync, production/*, allow
+      groups:
+        - production-deployers
+
+    - name: viewer
+      description: Read-only access
+      policies:
+        - p, proj:production:viewer, applications, get, production/*, allow
+      groups:
+        - production-viewers
+
+---
+# Sandbox project with minimal restrictions
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: sandbox
+  namespace: argocd
+spec:
+  description: Sandbox environment for experimentation
+
+  sourceRepos:
+    - '*'  # Allow any repository
+
+  destinations:
+    - namespace: 'sandbox-*'
+      server: https://kubernetes.default.svc
+
+  # Allow all cluster resources
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+
+  # Allow all namespace resources
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+
+  # Resource quotas to prevent resource exhaustion
+  namespaceResourceBlacklist: []
+
+  roles:
+    - name: user
+      description: Sandbox users have full control in their namespace
+      policies:
+        - p, proj:sandbox:user, applications, *, sandbox/*, allow
+      groups:
+        - sandbox-users
