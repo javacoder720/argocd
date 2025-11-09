@@ -31,3 +31,10 @@ patches:
       - op: replace
         path: /data/LOG_LEVEL
         value: "debug"
+  - target:
+      kind: Deployment
+      name: web-app
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "300m"
